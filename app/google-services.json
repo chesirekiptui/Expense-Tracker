@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "779898472665",
+    "firebase_url": "https://expense-tracker-ea4b6.firebaseio.com",
+    "project_id": "expense-tracker-ea4b6",
+    "storage_bucket": "expense-tracker-ea4b6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779898472665:android:a4dd7788d7146ab6",
+        "android_client_info": {
+          "package_name": "com.telesoft.expense"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "779898472665-3g0nst8a91u231hn2nr0v89hn5t9i5l1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.telesoft.expense",
+            "certificate_hash": "49b60949072114f0b46b33ad2049391004a78645"
+          }
+        },
+        {
+          "client_id": "779898472665-cb0jcjv3tuggioi16drj5tigk0ha0ru0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHycBF1y6Hx3d-bRdLFGNVDnKy3T4GTDo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "779898472665-cb0jcjv3tuggioi16drj5tigk0ha0ru0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
