@@ -1,11 +1,9 @@
 package com.telesoft.expense;
 
-import android.Manifest;
 import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -19,58 +17,84 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 public class Inbox extends AppCompatActivity {
-    ListView listView;
-    private static  final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
-    ArrayList smsList;
+
+    private static Inbox inst;
+    ArrayList<String> smsMessagesList = new ArrayList<String>();
+    ListView smsListView;
+    ArrayAdapter arrayAdapter;
+
+    public static Inbox instance() {
+        return inst;
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        inst = this;
+    }
+
 
     @Override
-    protected void onCreate (Bundle savedInstanceState) {
-
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_inbox);
+        setContentView(R.layout.activity_main);
 
-        listView = findViewById(R.id.idList);
+        smsListView = (ListView) findViewById(R.id.idList);
 
-        //starting the service
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
+        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, smsMessagesList);
+        smsListView.setAdapter(arrayAdapter);
 
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED){
-            showContacts();
-        }else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS}, PERMISSIONS_REQUEST_READ_CONTACTS);
+
+        // Add SMS Read Permision At Runtime
+        // Todo : If Permission Is Not GRANTED
+        if(ContextCompat.checkSelfPermission(getBaseContext(), "android.permission.READ_SMS") == PackageManager.PERMISSION_GRANTED) {
+
+            // Todo : If Permission Granted Then Show SMS
+            refreshSmsInbox();
+
+        } else {
+            // Todo : Then Set Permission
+            final int REQUEST_CODE_ASK_PERMISSIONS = 123;
+            ActivityCompat.requestPermissions(Inbox.this, new String[]{"android.permission.READ_SMS"}, REQUEST_CODE_ASK_PERMISSIONS);
         }
+
+
+
+
+    }
+    public void refreshSmsInbox() {
+        ContentResolver contentResolver = getContentResolver();
+        Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"), null, null, null, null);
+        int indexBody = smsInboxCursor.getColumnIndex("body");
+        int indexAddress = smsInboxCursor.getColumnIndex("address");
+        if (indexBody < 0 || !smsInboxCursor.moveToFirst()) return;
+        arrayAdapter.clear();
+        do {
+            String str = "SMS From: " + smsInboxCursor.getString(indexAddress) +
+                    "\n" + smsInboxCursor.getString(indexBody) + "\n";
+            arrayAdapter.add(str);
+        } while (smsInboxCursor.moveToNext());
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    public void updateList(final String smsMessage) {
+        arrayAdapter.insert(smsMessage, 0);
+        arrayAdapter.notifyDataSetChanged();
+    }
 
-        if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS){
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                showContacts();
-            }else {
-                Toast.makeText(this, "Get necessary permission first", Toast.LENGTH_SHORT).show();
+    public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+        try {
+            String[] smsMessages = smsMessagesList.get(pos).split("\n");
+            String address = smsMessages[0];
+            String smsMessage = "";
+            for (int i = 1; i < smsMessages.length; ++i) {
+                smsMessage += smsMessages[i];
             }
+
+            String smsMessageStr = address + "\n";
+            smsMessageStr += smsMessage;
+            Toast.makeText(this, smsMessageStr, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    }
-
-
-    private void showContacts() {
-        Uri inboxURI = Uri.parse("content://sns/inbox/MPESA");
-        smsList = new ArrayList();
-
-        ContentResolver cr = getContentResolver();
-
-
-        Cursor c = cr.query(inboxURI, null, null, null, null);
-        while(c.moveToNext()){
-            String Number = c.getString(c.getColumnIndexOrThrow("address")).toString();
-            String Body = c.getString(c.getColumnIndexOrThrow("body")).toString();
-            smsList.add("Number: "+Number + "\n"+ "Body: " + Body);
-        }
-        c.close();
-        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_2, smsList);
-        listView.setAdapter(adapter);
     }
 
 }
